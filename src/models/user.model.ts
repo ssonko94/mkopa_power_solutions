@@ -1,8 +1,8 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 import bcrypt from "bcrypt";
 import config from "config";
 
-export interface UserDocument extends mongoose.Document {
+export interface UserDocument extends Document {
   firstName: string;
   lastName: string;
   email: string;
@@ -36,10 +36,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    confirmationCode: {
-      type: String,
-      unique: true,
-    },
     status: {
       type: String,
       enum: ["Pending", "Active"],
@@ -49,7 +45,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-userSchema.pre("save", async (next) => {
+userSchema.pre("save", async function (next) {
   let user = this as unknown as UserDocument;
   if (!user.isModified) {
     return next();
@@ -71,6 +67,6 @@ userSchema.methods.comparePassword = async function (
   return bcrypt.compare(candidatePassword, user.password).catch((e) => false);
 };
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model<UserDocument>("User", userSchema);
 
 export default User;
